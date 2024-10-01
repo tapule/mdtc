@@ -1,6 +1,6 @@
 # -- MegaDrive toolchain builder --
 # Coded by: Juan Ángel Moreno Fernández (@_tapule) 2024
-# Github: https://github.com/tapule/
+# Github: https://github.com/tapule/mdtc
 # Based on Andrew DeRosier's (andwn) Marsdev (https://github.com/andwn/marsdev)
 
 BUILD_DIR   := $(shell pwd)/build
@@ -28,14 +28,15 @@ GNU_MIRROR          ?= https://ftp.gnu.org/gnu
 GDB_PREREQ_MIRROR   ?= https://gcc.gnu.org/pub/gcc/infrastructure
 
 # Packages versions
-BINUTILS_VER        ?= 2.42
-GCC_VER             ?= 14.1.0
+BINUTILS_VER        ?= 2.43.1
+GCC_VER             ?= 14.2.0
 NEWLIB_VER          ?= main
 GDB_VER             ?= 15.1
 GDB_PREREQ_GMP_VER  ?= 6.2.1
 GDB_PREREQ_MPFR_VER ?= 4.1.0
 SJASM_VER           ?= v0.39
 SIKTOOLS_VER        ?= master
+MDTOOLS_VER         ?= main
 
 # Directory stuff
 BINUTILS_DIR        := binutils-$(BINUTILS_VER)
@@ -46,6 +47,7 @@ GDB_PREREQ_GMP_DIR  := gmp-$(GDB_PREREQ_GMP_VER)
 GDB_PREREQ_MPFR_DIR	:= mpfr-$(GDB_PREREQ_MPFR_VER)
 SJASM_DIR           := sjasm-$(SJASM_VER)
 SIKTOOLS_DIR        := siktools-$(SIKTOOLS_VER)
+MDTOOLS_DIR         := mdtools-$(MDTOOLS_VER)
 BLASTEM_DIR         := blastem
 LOG_DIR             := $(shell pwd)
 
@@ -57,6 +59,7 @@ GDB_PREREQ_GMP_PKG  := $(GDB_PREREQ_GMP_DIR).tar.bz2
 GDB_PREREQ_MPFR_PKG := $(GDB_PREREQ_MPFR_DIR).tar.bz2
 SJASM_PKG           := $(SJASM_DIR)
 SIKTOOLS_PKG        := $(SIKTOOLS_DIR)
+MDTOOLS_PKG         := $(MDTOOLS_DIR)
 BLASTEM_PKG         := $(BLASTEM_DIR)
 
 # Needed to get Blastem's build directory
@@ -73,9 +76,10 @@ NPROC   := $(shell nproc --all)
 
 # Main targets
 all: BUILD_LANGS = $(LANGS)
-all: info mk-binutils mk-gcc mk-gdb mk-sjasm mk-siktools mk-blastem
+all: info mk-binutils mk-gcc mk-gdb mk-sjasm mk-siktools mk-mdtools mk-blastem
 with-newlib: BUILD_LANGS = c
-with-newlib: info mk-binutils mk-gcc mk-gdb mk-newlib mk-gcc-newlib mk-sjasm mk-siktools mk-blastem
+with-newlib: info mk-binutils mk-gcc mk-gdb mk-newlib mk-gcc-newlib mk-sjasm \
+             mk-siktools mk-mdtools mk-blastem
 
 mk-binutils: BINUTILS_BUILD_DIR=$(BINUTILS_DIR)/build
 mk-binutils: $(BINUTILS_DIR)
@@ -196,6 +200,13 @@ mk-siktools: $(SIKTOOLS_PKG)
 	cp -f $(SIKTOOLS_DIR)/vgi2eif/tool/vgi2eif $(BUILD_DIR)/bin
 	@touch mk-siktools
 
+mk-mdtools: $(MDTOOLS_PKG)
+	@echo "$(COLOR_GREEN)>> Building MDTools...$(COLOR_RESET)"
+	@mkdir -p $(BUILD_DIR)/bin
+	cd $(MDTOOLS_DIR) && make > $(LOG_DIR)/mdtools.log 2>&1
+	cp -rf $(MDTOOLS_DIR)/build/* $(BUILD_DIR)/bin
+	@touch mk-mdtools
+
 mk-blastem: mk-blastem-build
 #   We need a different target to do the copy due to sufix and version variables
 	cp -f -r $(BLASTEM_DIR)/blastem$(BLASTEM_SUFIX)-$(BLASTEM_VER) $(BUILD_DIR)/blastem
@@ -236,6 +247,11 @@ $(SIKTOOLS_PKG):
 	@rm -rf $(SIKTOOLS_DIR)
 	@echo "$(COLOR_GREEN)>> Downloading Sik tools...$(COLOR_RESET)"
 	@git clone https://github.com/sikthehedgehog/mdtools --depth=1 --branch $(SIKTOOLS_VER) $(SIKTOOLS_DIR)
+
+$(MDTOOLS_PKG):
+	@rm -rf $(MDTOOLS_DIR)
+	@echo "$(COLOR_GREEN)>> Downloading MDTools...$(COLOR_RESET)"
+	@git clone https://github.com/tapule/mdtools --depth=1 --branch $(MDTOOLS_VER) $(MDTOOLS_DIR)
 
 $(BLASTEM_PKG):
 	@rm -rf $(BLASTEM_DIR)
@@ -286,6 +302,7 @@ info:
 	@echo "        GDB_VER $(GDB_VER)"
 	@echo "        SJASM_VER $(SJASM_VER)"
 	@echo "        SIKTOOLS_VER $(SIKTOOLS_VER)"
+	@echo "        MDTOOLS_VER $(MDTOOLS_VER)"
 	@echo "        BLASTEM_VER tip"
 	@echo "    * Build langs:"
 	@echo "        LANGS $(LANGS)"
@@ -311,9 +328,10 @@ clean:
 	rm -rf $(GDB_DIR)
 	rm -rf $(SJASM_DIR)
 	rm -rf $(SIKTOOLS_DIR)
+	rm -rf $(MDTOOLS_DIR)
 	rm -rf $(BLASTEM_DIR)
 	rm -f mk-binutils mk-gcc mk-newlib mk-gcc-newlib mk-gdb mk-sjasm \
-		mk-siktools mk-blastem mk-blastem-build
+		mk-siktools mk-mdtools mk-blastem mk-blastem-build
 	rm -f binutils.log gcc.log newlib.log gcc-newlib.log gdb.log sjasm.log \
-		siktools.log blastem.log glew.log
+		siktools.log mdtools.log blastem.log glew.log
 	rm -rf $(BUILD_DIR)
