@@ -28,12 +28,12 @@ GNU_MIRROR          ?= https://ftp.gnu.org/gnu
 GDB_PREREQ_MIRROR   ?= https://gcc.gnu.org/pub/gcc/infrastructure
 
 # Packages versions
-BINUTILS_VER        ?= 2.44
-GCC_VER             ?= 14.2.0
+BINUTILS_VER        ?= 2.46.0
+GCC_VER             ?= 15.2.0
 NEWLIB_VER          ?= main
-GDB_VER             ?= 16.2
-GDB_PREREQ_GMP_VER  ?= 6.2.1
-GDB_PREREQ_MPFR_VER ?= 4.1.0
+GDB_VER             ?= 17.1
+GDB_PREREQ_GMP_VER  ?= 6.3.0
+GDB_PREREQ_MPFR_VER ?= 4.2.2
 SJASM_VER           ?= v0.39
 SIKTOOLS_VER        ?= master
 MDTOOLS_VER         ?= main

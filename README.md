@@ -3,9 +3,9 @@ A Linux m68k toolchain for MegaDrive development.
 
 ## Toolchain
 This Makefile will download and build the following packages:
-- Binutils 2.43.1
-- GCC (m68k-elf) 14.2.0
-- GDB 15.1
+- Binutils 2.46.0
+- GCC (m68k-elf) 15.2.0
+- GDB 17.1
 - SJasm 0.39
 - Siktools master branch
 - MDTools main branch
